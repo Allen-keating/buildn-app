@@ -12,30 +12,31 @@
   "dependencies": {
     "@buildn/ai-engine": "workspace:*",
     "@buildn/sandbox": "workspace:*",
+    "@supabase/ssr": "^0.5",
+    "@supabase/supabase-js": "^2",
+    "@tanstack/react-query": "^5",
+    "@trpc/client": "^11",
+    "@trpc/react-query": "^11",
+    "@trpc/server": "^11",
+    "class-variance-authority": "^0.7",
+    "clsx": "^2",
+    "lucide-react": "^0.577",
     "next": "^15",
     "react": "^19",
     "react-dom": "^19",
     "react-resizable-panels": "^4",
-    "@supabase/supabase-js": "^2",
-    "@supabase/ssr": "^0.5",
-    "@trpc/server": "^11",
-    "@trpc/client": "^11",
-    "@trpc/react-query": "^11",
-    "@tanstack/react-query": "^5",
     "superjson": "^2",
-    "zod": "^3",
-    "class-variance-authority": "^0.7",
-    "clsx": "^2",
     "tailwind-merge": "^3",
-    "lucide-react": "^0.577"
+    "zod": "^3",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@buildn/shared": "workspace:*",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/node": "^22",
     "tailwindcss": "^4",
-    "@tailwindcss/postcss": "^4",
     "typescript": "^5.7"
   }
 }
