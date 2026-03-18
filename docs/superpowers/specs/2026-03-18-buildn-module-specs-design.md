@@ -35,9 +35,9 @@ interface GenerateRequest {
 }
 
 interface GenerateConfig {
-  model?: string            // LLM model ID, default claude-sonnet-4-6
-  maxRetries?: number       // Post-processing retry count, default 3
-  tokenBudget?: number      // Context token limit, default 120_000
+  model?: string // LLM model ID, default claude-sonnet-4-6
+  maxRetries?: number // Post-processing retry count, default 3
+  tokenBudget?: number // Context token limit, default 120_000
   skipPostProcess?: boolean // Skip post-processing (debug only)
 }
 
@@ -90,13 +90,13 @@ GenerateRequest
 
 ### 1.4 Dependencies
 
-| Dependency | Purpose |
-|---|---|
-| `@anthropic-ai/sdk` | LLM API calls |
-| `packages/shared` | Shared types (`FileMap`, `FileOperation`, `ConversationMessage`) |
-| `typescript` | Type checking (programmatic API) |
-| `eslint` | Code quality checks |
-| `vite` | Build verification |
+| Dependency          | Purpose                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| `@anthropic-ai/sdk` | LLM API calls                                                    |
+| `packages/shared`   | Shared types (`FileMap`, `FileOperation`, `ConversationMessage`) |
+| `typescript`        | Type checking (programmatic API)                                 |
+| `eslint`            | Code quality checks                                              |
+| `vite`              | Build verification                                               |
 
 **Depended on by:** `packages/server` (ChatService calls `generateCode`)
 
@@ -105,13 +105,13 @@ GenerateRequest
 ```typescript
 type Intent = 'create' | 'modify' | 'question' | 'deploy'
 
-type FileMap = Record<string, string>  // { "src/App.tsx": "import..." }
+type FileMap = Record<string, string> // { "src/App.tsx": "import..." }
 
 interface FileOperation {
   type: 'create' | 'modify' | 'delete'
   path: string
-  content?: string     // undefined for delete
-  diff?: string        // unified diff for modify (used by UI)
+  content?: string // undefined for delete
+  diff?: string // unified diff for modify (used by UI)
 }
 
 interface ConversationMessage {
@@ -126,7 +126,12 @@ interface ValidationResult {
 }
 
 interface EngineError {
-  code: 'LLM_TIMEOUT' | 'LLM_RATE_LIMIT' | 'PARSE_FAILED' | 'MAX_RETRIES_EXCEEDED' | 'TOKEN_BUDGET_EXCEEDED'
+  code:
+    | 'LLM_TIMEOUT'
+    | 'LLM_RATE_LIMIT'
+    | 'PARSE_FAILED'
+    | 'MAX_RETRIES_EXCEEDED'
+    | 'TOKEN_BUDGET_EXCEEDED'
   message: string
   retryable: boolean
 }
@@ -134,14 +139,14 @@ interface EngineError {
 
 ### 1.6 Edge Cases and Error Handling
 
-| Scenario | Handling |
-|---|---|
-| LLM output does not follow `---FILE:---` format | Parser attempts loose matching (code block fallback); yields `PARSE_FAILED` on failure |
-| Context exceeds tokenBudget | ContextAssembler trims files by priority; yields `TOKEN_BUDGET_EXCEEDED` if still over |
-| Post-processing fails after 3 retries | Yields `MAX_RETRIES_EXCEEDED`; returns last FileOperation[] marked as unvalidated |
-| LLM API timeout or rate limit | Exponential backoff, retry twice; yields corresponding error on failure |
-| Empty or meaningless user prompt | Classifier returns `question` intent; LLM responds with guidance |
-| Generated code references non-existent npm package | Caught at BuildTest stage; error fed back to LLM for retry |
+| Scenario                                           | Handling                                                                               |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| LLM output does not follow `---FILE:---` format    | Parser attempts loose matching (code block fallback); yields `PARSE_FAILED` on failure |
+| Context exceeds tokenBudget                        | ContextAssembler trims files by priority; yields `TOKEN_BUDGET_EXCEEDED` if still over |
+| Post-processing fails after 3 retries              | Yields `MAX_RETRIES_EXCEEDED`; returns last FileOperation[] marked as unvalidated      |
+| LLM API timeout or rate limit                      | Exponential backoff, retry twice; yields corresponding error on failure                |
+| Empty or meaningless user prompt                   | Classifier returns `question` intent; LLM responds with guidance                       |
+| Generated code references non-existent npm package | Caught at BuildTest stage; error fed back to LLM for retry                             |
 
 ### 1.7 Acceptance Criteria
 
@@ -233,12 +238,13 @@ writeFiles(files)  <- called after AI generates code
 
 ### 2.4 Dependencies
 
-| Dependency | Purpose |
-|---|---|
-| `@webcontainer/api` | In-browser Node.js runtime |
-| `packages/shared` | Shared types (`FileMap`, `FileTreeNode`) |
+| Dependency          | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| `@webcontainer/api` | In-browser Node.js runtime               |
+| `packages/shared`   | Shared types (`FileMap`, `FileTreeNode`) |
 
 **Depended on by:**
+
 - `PreviewPanel` — calls `onServerReady` for preview URL
 - `FileTree` — calls `listFiles` for directory tree
 - `CodeEditor` — calls `readFile`/`writeFile` for manual edits
@@ -247,31 +253,25 @@ writeFiles(files)  <- called after AI generates code
 ### 2.5 Core Type Definitions
 
 ```typescript
-type SandboxStatus =
-  | 'idle'
-  | 'booting'
-  | 'installing'
-  | 'running'
-  | 'building'
-  | 'error'
+type SandboxStatus = 'idle' | 'booting' | 'installing' | 'running' | 'building' | 'error'
 
 interface FileTreeNode {
   name: string
-  path: string               // relative path "src/components/Button.tsx"
+  path: string // relative path "src/components/Button.tsx"
   type: 'file' | 'directory'
-  children?: FileTreeNode[]  // present when type === 'directory'
+  children?: FileTreeNode[] // present when type === 'directory'
 }
 
 interface InstallResult {
   success: boolean
-  duration: number           // ms
+  duration: number // ms
   installedPackages?: string[]
   errors?: string[]
 }
 
 interface BuildResult {
   success: boolean
-  outputFiles: string[]      // files under dist/
+  outputFiles: string[] // files under dist/
   errors?: string[]
   warnings?: string[]
 }
@@ -279,21 +279,21 @@ interface BuildResult {
 interface SandboxError {
   code: 'BOOT_FAILED' | 'INSTALL_FAILED' | 'SERVER_CRASH' | 'BUILD_FAILED' | 'FS_ERROR'
   message: string
-  details?: string           // full stderr output
+  details?: string // full stderr output
 }
 ```
 
 ### 2.6 Edge Cases and Error Handling
 
-| Scenario | Handling |
-|---|---|
-| WebContainer.boot() fails (unsupported browser) | Yield `BOOT_FAILED`; UI shows degradation notice (recommend Chrome) |
-| npm install timeout (large dependencies) | 30s timeout, kill process, return `INSTALL_FAILED`; UI prompts retry |
-| Vite dev server crashes | Listen for process exit; auto `restartDevServer()` (max 2 attempts) |
-| package.json modified by AI (new dependencies) | `writeFiles` detects package.json change; auto `installPackages()` before HMR |
-| User manual edit conflicts with AI generation | `writeFiles` overwrites (AI takes priority); snapshot created before overwrite; status bar shows "snapshot saved" |
-| File path contains illegal characters | `writeFile` validates path format; rejects with `FS_ERROR` |
-| WebContainer out of memory (large project) | Listen for unhandledrejection; prompt user to reduce files or refresh |
+| Scenario                                        | Handling                                                                                                          |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| WebContainer.boot() fails (unsupported browser) | Yield `BOOT_FAILED`; UI shows degradation notice (recommend Chrome)                                               |
+| npm install timeout (large dependencies)        | 30s timeout, kill process, return `INSTALL_FAILED`; UI prompts retry                                              |
+| Vite dev server crashes                         | Listen for process exit; auto `restartDevServer()` (max 2 attempts)                                               |
+| package.json modified by AI (new dependencies)  | `writeFiles` detects package.json change; auto `installPackages()` before HMR                                     |
+| User manual edit conflicts with AI generation   | `writeFiles` overwrites (AI takes priority); snapshot created before overwrite; status bar shows "snapshot saved" |
+| File path contains illegal characters           | `writeFile` validates path format; rejects with `FS_ERROR`                                                        |
+| WebContainer out of memory (large project)      | Listen for unhandledrejection; prompt user to reduce files or refresh                                             |
 
 ### 2.7 Acceptance Criteria
 
@@ -467,32 +467,32 @@ User types prompt -> onSendMessage()
 
 ### 3.5 Dependencies
 
-| Dependency | Purpose |
-|---|---|
-| `react` / `react-dom` | UI framework |
-| `zustand` | State management |
-| `@monaco-editor/react` | Code editor |
+| Dependency                      | Purpose                        |
+| ------------------------------- | ------------------------------ |
+| `react` / `react-dom`           | UI framework                   |
+| `zustand`                       | State management               |
+| `@monaco-editor/react`          | Code editor                    |
 | `react-markdown` + `remark-gfm` | Markdown rendering in messages |
-| `shiki` | Code syntax highlighting |
-| `react-diff-viewer` | Diff display |
-| `shadcn/ui` | Base UI components |
-| Sandbox (Module 2) | File operations and preview |
-| `packages/shared` | Shared types |
+| `shiki`                         | Code syntax highlighting       |
+| `react-diff-viewer`             | Diff display                   |
+| `shadcn/ui`                     | Base UI components             |
+| Sandbox (Module 2)              | File operations and preview    |
+| `packages/shared`               | Shared types                   |
 
 **Depended on by:** None (top-level application)
 
 ### 3.6 Edge Cases and Error Handling
 
-| Scenario | Handling |
-|---|---|
-| SSE connection interrupted during AI streaming | Detect SSE close; mark message as `error`; show retry button |
-| User sends message while AI is generating | Input disabled; block duplicate requests |
-| File tree has > 100 files | Virtual scrolling + expand directories on demand |
-| Monaco Editor loads large file (> 10k lines) | Show warning; lazy load; disable some highlighting features |
-| Preview iframe fails to load | ErrorOverlay with error details + retry button |
-| User manual edit conflicts with AI generation | AI generation overwrites; auto-snapshot created before overwrite; status bar shows "snapshot saved" |
-| Browser window too narrow (< 768px) | Three columns switch to tab mode (Chat / Code / Preview toggle) |
-| XSS in Markdown messages | `react-markdown` does not execute HTML by default; additionally use `rehype-sanitize` |
+| Scenario                                       | Handling                                                                                            |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| SSE connection interrupted during AI streaming | Detect SSE close; mark message as `error`; show retry button                                        |
+| User sends message while AI is generating      | Input disabled; block duplicate requests                                                            |
+| File tree has > 100 files                      | Virtual scrolling + expand directories on demand                                                    |
+| Monaco Editor loads large file (> 10k lines)   | Show warning; lazy load; disable some highlighting features                                         |
+| Preview iframe fails to load                   | ErrorOverlay with error details + retry button                                                      |
+| User manual edit conflicts with AI generation  | AI generation overwrites; auto-snapshot created before overwrite; status bar shows "snapshot saved" |
+| Browser window too narrow (< 768px)            | Three columns switch to tab mode (Chat / Code / Preview toggle)                                     |
+| XSS in Markdown messages                       | `react-markdown` does not execute HTML by default; additionally use `rehype-sanitize`               |
 
 ### 3.7 Acceptance Criteria
 
@@ -521,24 +521,46 @@ Provides the backend API service managing user authentication, project CRUD, fil
 // ==================== Auth ====================
 
 // POST /api/auth/register
-interface RegisterRequest { email: string; password: string; name: string }
-interface RegisterResponse { user: User; token: string }
+interface RegisterRequest {
+  email: string
+  password: string
+  name: string
+}
+interface RegisterResponse {
+  user: User
+  token: string
+}
 
 // POST /api/auth/login
-interface LoginRequest { email: string; password: string }
-interface LoginResponse { user: User; token: string }
+interface LoginRequest {
+  email: string
+  password: string
+}
+interface LoginResponse {
+  user: User
+  token: string
+}
 
 // POST /api/auth/github
-interface GitHubAuthRequest { code: string }
-interface GitHubAuthResponse { user: User; token: string }
+interface GitHubAuthRequest {
+  code: string
+}
+interface GitHubAuthResponse {
+  user: User
+  token: string
+}
 
 // GET /api/auth/me
-interface MeResponse { user: User }
+interface MeResponse {
+  user: User
+}
 
 // ==================== Projects ====================
 
 // GET /api/projects
-interface ListProjectsResponse { projects: ProjectSummary[] }
+interface ListProjectsResponse {
+  projects: ProjectSummary[]
+}
 
 // POST /api/projects
 interface CreateProjectRequest {
@@ -546,7 +568,9 @@ interface CreateProjectRequest {
   description?: string
   template: 'blank' | 'dashboard' | 'landing' | 'ecommerce'
 }
-interface CreateProjectResponse { project: Project }
+interface CreateProjectResponse {
+  project: Project
+}
 
 // GET /api/projects/:id
 interface GetProjectResponse {
@@ -555,27 +579,39 @@ interface GetProjectResponse {
 }
 
 // PATCH /api/projects/:id
-interface UpdateProjectRequest { name?: string; description?: string }
+interface UpdateProjectRequest {
+  name?: string
+  description?: string
+}
 
 // DELETE /api/projects/:id -> 204 No Content
 
 // ==================== Files ====================
 
 // GET /api/projects/:id/files
-interface ListFilesResponse { tree: FileTreeNode[] }
+interface ListFilesResponse {
+  tree: FileTreeNode[]
+}
 
 // GET /api/projects/:id/files/*path
-interface ReadFileResponse { path: string; content: string }
+interface ReadFileResponse {
+  path: string
+  content: string
+}
 
 // PUT /api/projects/:id/files/*path
-interface WriteFileRequest { content: string }
+interface WriteFileRequest {
+  content: string
+}
 
 // DELETE /api/projects/:id/files/*path -> 204 No Content
 
 // ==================== Chat ====================
 
 // POST /api/projects/:id/chat -> SSE stream
-interface ChatRequest { prompt: string }
+interface ChatRequest {
+  prompt: string
+}
 // SSE events map 1:1 with AI engine GenerateEvent:
 // event: token       data: { text: "..." }
 // event: file_op     data: { operation: FileOperation }
@@ -592,7 +628,10 @@ interface ListMessagesResponse {
 // ==================== Deploy ====================
 
 // POST /api/projects/:id/deploy
-interface DeployResponse { deployId: string; status: 'queued' }
+interface DeployResponse {
+  deployId: string
+  status: 'queued'
+}
 
 // GET /api/projects/:id/deploy/status
 interface DeployStatusResponse {
@@ -604,7 +643,9 @@ interface DeployStatusResponse {
 // ==================== Snapshots ====================
 
 // GET /api/projects/:id/snapshots
-interface ListSnapshotsResponse { snapshots: SnapshotSummary[] }
+interface ListSnapshotsResponse {
+  snapshots: SnapshotSummary[]
+}
 
 interface SnapshotSummary {
   id: string
@@ -615,7 +656,9 @@ interface SnapshotSummary {
 }
 
 // POST /api/projects/:id/snapshots/:sid/restore -> 200
-interface RestoreResponse { files: FileMap }
+interface RestoreResponse {
+  files: FileMap
+}
 ```
 
 ### 4.3 Internal Architecture
@@ -671,7 +714,9 @@ const users = pgTable('users', {
 
 const projects = pgTable('projects', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 200 }).notNull(),
   description: text('description').default(''),
   template: varchar('template', { length: 50 }).notNull().default('blank'),
@@ -682,20 +727,26 @@ const projects = pgTable('projects', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
-const files = pgTable('files', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
-  path: varchar('path', { length: 500 }).notNull(),
-  content: text('content').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (t) => [
-  unique().on(t.projectId, t.path),
-])
+const files = pgTable(
+  'files',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    path: varchar('path', { length: 500 }).notNull(),
+    content: text('content').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.projectId, t.path)],
+)
 
 const messages = pgTable('messages', {
   id: uuid('id').primaryKey().defaultRandom(),
-  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 20 }).notNull(),
   content: text('content').notNull(),
   fileOperations: jsonb('file_operations'),
@@ -704,7 +755,9 @@ const messages = pgTable('messages', {
 
 const snapshots = pgTable('snapshots', {
   id: uuid('id').primaryKey().defaultRandom(),
-  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
   messageId: uuid('message_id').references(() => messages.id),
   description: varchar('description', { length: 500 }).notNull(),
   files: jsonb('files').notNull(),
@@ -713,7 +766,9 @@ const snapshots = pgTable('snapshots', {
 
 const deploys = pgTable('deploys', {
   id: uuid('id').primaryKey().defaultRandom(),
-  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
   phase: varchar('phase', { length: 20 }).notNull(),
   netlifyDeployId: varchar('netlify_deploy_id', { length: 100 }),
   url: varchar('url', { length: 500 }),
@@ -725,30 +780,30 @@ const deploys = pgTable('deploys', {
 
 ### 4.5 Dependencies
 
-| Dependency | Purpose |
-|---|---|
-| `hono` | Web framework |
-| `drizzle-orm` + `drizzle-kit` | ORM + migrations |
-| `@supabase/supabase-js` | Auth + Storage |
-| `ioredis` | Redis client |
-| `packages/ai-engine` | Calls `generateCode()` |
-| `packages/shared` | Shared types |
+| Dependency                    | Purpose                |
+| ----------------------------- | ---------------------- |
+| `hono`                        | Web framework          |
+| `drizzle-orm` + `drizzle-kit` | ORM + migrations       |
+| `@supabase/supabase-js`       | Auth + Storage         |
+| `ioredis`                     | Redis client           |
+| `packages/ai-engine`          | Calls `generateCode()` |
+| `packages/shared`             | Shared types           |
 
 **Depended on by:** `packages/web` (frontend calls via HTTP/SSE)
 
 ### 4.6 Edge Cases and Error Handling
 
-| Scenario | Handling |
-|---|---|
-| JWT expired | Return 401; frontend redirects to login |
-| Access another user's project | ProjectService checks userId; return 403 |
-| SSE connection drops during AI generation | Server detects connection close; terminates LLM stream; does not save incomplete message |
-| Path traversal attack (`../../etc/passwd`) | FileService validates path is relative with no `..` segments |
-| Concurrent writes to same file | Database `ON CONFLICT (project_id, path)` upsert; last writer wins |
-| Snapshot data too large (big project) | Single snapshot capped at 10MB; prompt user to clean up unused files |
-| Free user exceeds project limit | ProjectService checks user plan; free limited to 5 projects; return 403 |
+| Scenario                                    | Handling                                                                                 |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| JWT expired                                 | Return 401; frontend redirects to login                                                  |
+| Access another user's project               | ProjectService checks userId; return 403                                                 |
+| SSE connection drops during AI generation   | Server detects connection close; terminates LLM stream; does not save incomplete message |
+| Path traversal attack (`../../etc/passwd`)  | FileService validates path is relative with no `..` segments                             |
+| Concurrent writes to same file              | Database `ON CONFLICT (project_id, path)` upsert; last writer wins                       |
+| Snapshot data too large (big project)       | Single snapshot capped at 10MB; prompt user to clean up unused files                     |
+| Free user exceeds project limit             | ProjectService checks user plan; free limited to 5 projects; return 403                  |
 | AI generation completes but file save fails | Transaction rollback: message + files + snapshot in a single transaction for consistency |
-| Conversation history too long (token bloat) | ChatService passes only the most recent 20 messages to AI engine |
+| Conversation history too long (token bloat) | ChatService passes only the most recent 20 messages to AI engine                         |
 
 ### 4.7 Acceptance Criteria
 
@@ -787,18 +842,13 @@ interface DeployJob {
   createdAt: Date
 }
 
-type DeployPhase =
-  | 'queued'
-  | 'building'
-  | 'uploading'
-  | 'ready'
-  | 'failed'
+type DeployPhase = 'queued' | 'building' | 'uploading' | 'ready' | 'failed'
 
 interface DeployStatus {
   phase: DeployPhase
   url?: string
   error?: string
-  progress?: number      // 0-100, during uploading phase
+  progress?: number // 0-100, during uploading phase
   startedAt: Date
   completedAt?: Date
 }
@@ -844,41 +894,44 @@ deploy(projectId, files)
 ```typescript
 interface NetlifyClient {
   createSite(name: string): Promise<{ siteId: string; url: string }>
-  createDeploy(siteId: string, fileDigests: Record<string, string>): Promise<{ deployId: string; requiredFiles: string[] }>
+  createDeploy(
+    siteId: string,
+    fileDigests: Record<string, string>,
+  ): Promise<{ deployId: string; requiredFiles: string[] }>
   uploadFile(deployId: string, path: string, content: Buffer): Promise<void>
   getDeployStatus(deployId: string): Promise<{ state: string; url: string }>
 }
 
 interface NetlifyConfig {
-  authToken: string          // NETLIFY_AUTH_TOKEN env var
+  authToken: string // NETLIFY_AUTH_TOKEN env var
   teamSlug?: string
 }
 ```
 
 ### 5.5 Dependencies
 
-| Dependency | Purpose |
-|---|---|
-| Netlify REST API | Site creation and file upload |
-| `vite` | Production build (CLI invocation) |
+| Dependency                       | Purpose                                               |
+| -------------------------------- | ----------------------------------------------------- |
+| Netlify REST API                 | Site creation and file upload                         |
+| `vite`                           | Production build (CLI invocation)                     |
 | `node:fs` + `node:child_process` | Temp directory operations and build command execution |
-| `node:crypto` | SHA1 digest computation (required by Netlify API) |
-| `packages/shared` | Shared types |
+| `node:crypto`                    | SHA1 digest computation (required by Netlify API)     |
+| `packages/shared`                | Shared types                                          |
 
 **Depended on by:** `packages/server` route layer (`/deploy` endpoint)
 
 ### 5.6 Edge Cases and Error Handling
 
-| Scenario | Handling |
-|---|---|
-| Duplicate deploy triggered for same project | Check for existing `queued`/`building`/`uploading` job; return 409 Conflict |
-| vite build fails | Capture stderr; store in deploy.error; set phase to `failed`; return error details to frontend |
-| Netlify API rate limit (429) | Exponential backoff, retry 3 times; set phase to `failed` on exhaustion |
-| Netlify API auth failure (401) | Set phase to `failed`; log alert to check NETLIFY_AUTH_TOKEN |
-| Upload interrupted by network | Netlify supports incremental upload (only requiredFiles); retry from interruption point |
-| Build output too large (> 100MB) | Check dist/ size after build; set phase to `failed` if over limit; prompt user to optimize |
-| Temp directory cleanup fails | Cleanup in finally block; failure only logged, does not affect main flow |
-| Free user deploy limit | 5 deploys per day (free plan); return 403 on excess |
+| Scenario                                    | Handling                                                                                       |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Duplicate deploy triggered for same project | Check for existing `queued`/`building`/`uploading` job; return 409 Conflict                    |
+| vite build fails                            | Capture stderr; store in deploy.error; set phase to `failed`; return error details to frontend |
+| Netlify API rate limit (429)                | Exponential backoff, retry 3 times; set phase to `failed` on exhaustion                        |
+| Netlify API auth failure (401)              | Set phase to `failed`; log alert to check NETLIFY_AUTH_TOKEN                                   |
+| Upload interrupted by network               | Netlify supports incremental upload (only requiredFiles); retry from interruption point        |
+| Build output too large (> 100MB)            | Check dist/ size after build; set phase to `failed` if over limit; prompt user to optimize     |
+| Temp directory cleanup fails                | Cleanup in finally block; failure only logged, does not affect main flow                       |
+| Free user deploy limit                      | 5 deploys per day (free plan); return 403 on excess                                            |
 
 ### 5.7 Acceptance Criteria
 

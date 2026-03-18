@@ -27,6 +27,7 @@ packages/server/src/
 ## Task 1: Netlify API Client
 
 **Files:**
+
 - Create: `packages/server/src/lib/netlify.ts`
 
 - [ ] **Step 1: Create netlify.ts**
@@ -75,11 +76,7 @@ export async function createDeploy(
   return { id: data.id, required: data.required || [] }
 }
 
-export async function uploadFile(
-  deployId: string,
-  path: string,
-  content: Buffer,
-): Promise<void> {
+export async function uploadFile(deployId: string, path: string, content: Buffer): Promise<void> {
   const res = await fetch(`${NETLIFY_API}/deploys/${deployId}/files/${path}`, {
     method: 'PUT',
     headers: {
@@ -91,9 +88,7 @@ export async function uploadFile(
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
 }
 
-export async function getDeployStatus(
-  deployId: string,
-): Promise<{ state: string; url: string }> {
+export async function getDeployStatus(deployId: string): Promise<{ state: string; url: string }> {
   const data = await netlifyFetch(`/deploys/${deployId}`)
   return { state: data.state, url: data.ssl_url || data.url }
 }
@@ -111,6 +106,7 @@ git commit -m "feat(server): add Netlify REST API client"
 ## Task 2: Deploy Service
 
 **Files:**
+
 - Create: `packages/server/src/services/deploy.service.ts`
 
 - [ ] **Step 1: Create deploy.service.ts**
@@ -142,10 +138,7 @@ export async function startDeploy(projectId: string) {
     return { error: 'A deployment is already in progress' }
   }
 
-  const [deploy] = await db
-    .insert(deploys)
-    .values({ projectId, phase: 'queued' })
-    .returning()
+  const [deploy] = await db.insert(deploys).values({ projectId, phase: 'queued' }).returning()
 
   // Run deploy in background (non-blocking)
   runDeploy(deploy.id, projectId).catch(console.error)
@@ -171,7 +164,11 @@ async function runDeploy(deployId: string, projectId: string) {
     }
 
     // Install & build
-    execSync('npm install --ignore-scripts 2>/dev/null', { cwd: dir, stdio: 'pipe', timeout: 60000 })
+    execSync('npm install --ignore-scripts 2>/dev/null', {
+      cwd: dir,
+      stdio: 'pipe',
+      timeout: 60000,
+    })
     execSync('npx vite build', { cwd: dir, stdio: 'pipe', timeout: 60000 })
 
     const distDir = join(dir, 'dist')
@@ -199,7 +196,10 @@ async function runDeploy(deployId: string, projectId: string) {
 
     // Create deploy and upload required files
     const netlifyDeploy = await createDeploy(siteId, digests)
-    await db.update(deploys).set({ netlifyDeployId: netlifyDeploy.id }).where(eq(deploys.id, deployId))
+    await db
+      .update(deploys)
+      .set({ netlifyDeployId: netlifyDeploy.id })
+      .where(eq(deploys.id, deployId))
 
     for (const requiredPath of netlifyDeploy.required) {
       const localPath = distFiles[requiredPath.slice(1)] // Remove leading /
@@ -218,8 +218,14 @@ async function runDeploy(deployId: string, projectId: string) {
     }
 
     if (status.state === 'ready') {
-      await db.update(deploys).set({ phase: 'ready', url: status.url, completedAt: new Date() }).where(eq(deploys.id, deployId))
-      await db.update(projects).set({ deployUrl: status.url, status: 'published' }).where(eq(projects.id, projectId))
+      await db
+        .update(deploys)
+        .set({ phase: 'ready', url: status.url, completedAt: new Date() })
+        .where(eq(deploys.id, deployId))
+      await db
+        .update(projects)
+        .set({ deployUrl: status.url, status: 'published' })
+        .where(eq(projects.id, projectId))
     } else {
       await updatePhase(deployId, 'failed', `Deploy did not become ready: ${status.state}`)
     }
@@ -231,11 +237,14 @@ async function runDeploy(deployId: string, projectId: string) {
 }
 
 async function updatePhase(deployId: string, phase: string, error?: string) {
-  await db.update(deploys).set({
-    phase,
-    ...(error ? { error } : {}),
-    ...(phase === 'ready' || phase === 'failed' ? { completedAt: new Date() } : {}),
-  }).where(eq(deploys.id, deployId))
+  await db
+    .update(deploys)
+    .set({
+      phase,
+      ...(error ? { error } : {}),
+      ...(phase === 'ready' || phase === 'failed' ? { completedAt: new Date() } : {}),
+    })
+    .where(eq(deploys.id, deployId))
 }
 
 function collectFiles(dir: string, prefix: string): Record<string, string> {
@@ -282,6 +291,7 @@ git commit -m "feat(server): add deploy service with Netlify build and upload pi
 ## Task 3: Deploy Routes
 
 **Files:**
+
 - Create: `packages/server/src/routes/deploy.ts`
 - Modify: `packages/server/src/app.ts`
 

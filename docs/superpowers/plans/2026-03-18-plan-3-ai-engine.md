@@ -52,6 +52,7 @@ packages/ai-engine/
 ## Task 1: Prompt Templates
 
 **Files:**
+
 - Create: `packages/ai-engine/src/prompts/system.ts`
 - Create: `packages/ai-engine/src/prompts/create-app.ts`
 - Create: `packages/ai-engine/src/prompts/modify-code.ts`
@@ -116,10 +117,7 @@ export function buildModifyPrompt(
 - [ ] **Step 4: Create fix-error.ts**
 
 ```typescript
-export function buildFixErrorPrompt(
-  originalCode: string,
-  errors: string[],
-): string {
+export function buildFixErrorPrompt(originalCode: string, errors: string[]): string {
   let prompt = `The following code has errors that need to be fixed:\n\n`
   prompt += `${originalCode}\n\n`
   prompt += `Errors:\n${errors.map((e) => `- ${e}`).join('\n')}\n\n`
@@ -140,6 +138,7 @@ git commit -m "feat(ai-engine): add system and task-specific prompt templates"
 ## Task 2: Intent Classifier
 
 **Files:**
+
 - Create: `packages/ai-engine/src/classifier/intent.ts`
 - Create: `packages/ai-engine/tests/classifier.test.ts`
 
@@ -194,13 +193,9 @@ const QUESTION_PATTERNS = [
   /^(what|how|why|explain|describe|tell me|can you)/i,
 ]
 
-const DEPLOY_PATTERNS = [
-  /发布|部署|上线|deploy|publish|ship/i,
-]
+const DEPLOY_PATTERNS = [/发布|部署|上线|deploy|publish|ship/i]
 
-const CREATE_PATTERNS = [
-  /创建|新建|做一个|生成|帮我做|build|create|make|generate|scaffold/i,
-]
+const CREATE_PATTERNS = [/创建|新建|做一个|生成|帮我做|build|create|make|generate|scaffold/i]
 
 export function classifyIntent(prompt: string, hasExistingProject: boolean): Intent {
   const trimmed = prompt.trim()
@@ -230,6 +225,7 @@ git commit -m "feat(ai-engine): add keyword-based intent classifier with tests"
 ## Task 3: Context Assembly & Token Budget
 
 **Files:**
+
 - Create: `packages/ai-engine/src/context/budget.ts`
 - Create: `packages/ai-engine/src/context/retriever.ts`
 - Create: `packages/ai-engine/src/context/assembler.ts`
@@ -296,9 +292,7 @@ describe('trimToTokenBudget', () => {
   })
 
   it('drops items that exceed budget', () => {
-    const items = [
-      { key: 'a', content: 'x'.repeat(1000), priority: 1 },
-    ]
+    const items = [{ key: 'a', content: 'x'.repeat(1000), priority: 1 }]
     const result = trimToTokenBudget(items, 10)
     expect(result.size).toBe(0)
   })
@@ -440,6 +434,7 @@ git commit -m "feat(ai-engine): add context assembly, token budget, and file ret
 ## Task 4: LLM Client & Output Parser
 
 **Files:**
+
 - Create: `packages/ai-engine/src/generator/llm-client.ts`
 - Create: `packages/ai-engine/src/generator/parser.ts`
 - Create: `packages/ai-engine/src/generator/stream.ts`
@@ -459,7 +454,7 @@ let client: Anthropic | null = null
 
 function getClient(): Anthropic {
   if (!client) {
-    client = new Anthropic()  // reads ANTHROPIC_API_KEY from env
+    client = new Anthropic() // reads ANTHROPIC_API_KEY from env
   }
   return client
 }
@@ -493,15 +488,12 @@ export async function* callLLM(
 
 - [ ] **Step 3: Create parser.ts**
 
-```typescript
+````typescript
 import type { FileMap, FileOperation } from '@buildn/shared'
 
 const FILE_REGEX = /---FILE:\s*(.+?)---\n([\s\S]*?)---END FILE---/g
 
-export function parseFileOperations(
-  llmOutput: string,
-  existingFiles: FileMap,
-): FileOperation[] {
+export function parseFileOperations(llmOutput: string, existingFiles: FileMap): FileOperation[] {
   const operations: FileOperation[] = []
   let match: RegExpExecArray | null
 
@@ -532,11 +524,11 @@ export function parseFileOperations(
 
   return operations
 }
-```
+````
 
 - [ ] **Step 4: Write parser tests**
 
-```typescript
+````typescript
 // packages/ai-engine/tests/parser.test.ts
 import { describe, it, expect } from 'vitest'
 import { parseFileOperations } from '../src/generator/parser'
@@ -582,7 +574,7 @@ new content
     expect(ops).toHaveLength(0)
   })
 })
-```
+````
 
 - [ ] **Step 5: Create stream.ts**
 
@@ -614,6 +606,7 @@ git commit -m "feat(ai-engine): add LLM client, output parser with fallback, and
 ## Task 5: Post-Processing Pipeline
 
 **Files:**
+
 - Create: `packages/ai-engine/src/postprocess/typecheck.ts`
 - Create: `packages/ai-engine/src/postprocess/lint.ts`
 - Create: `packages/ai-engine/src/postprocess/build-test.ts`
@@ -635,18 +628,21 @@ export function runTypeCheck(files: FileMap): ValidationResult {
     mkdirSync(dir, { recursive: true })
 
     // Write tsconfig
-    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'ESNext',
-        moduleResolution: 'bundler',
-        jsx: 'react-jsx',
-        strict: true,
-        noEmit: true,
-        skipLibCheck: true,
-      },
-      include: ['**/*.ts', '**/*.tsx'],
-    }))
+    writeFileSync(
+      join(dir, 'tsconfig.json'),
+      JSON.stringify({
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ESNext',
+          moduleResolution: 'bundler',
+          jsx: 'react-jsx',
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+        },
+        include: ['**/*.ts', '**/*.tsx'],
+      }),
+    )
 
     // Write files
     for (const [path, content] of Object.entries(files)) {
@@ -825,6 +821,7 @@ git commit -m "feat(ai-engine): add post-processing pipeline (typecheck, lint, b
 ## Task 6: Main Pipeline Orchestrator
 
 **Files:**
+
 - Create: `packages/ai-engine/src/pipeline.ts`
 - Modify: `packages/ai-engine/src/index.ts`
 
@@ -838,9 +835,7 @@ import { callLLM } from './generator/llm-client'
 import { parseFileOperations } from './generator/parser'
 import { autoFixPipeline } from './postprocess/auto-fix'
 
-export async function* generateCode(
-  request: GenerateRequest,
-): AsyncGenerator<GenerateEvent> {
+export async function* generateCode(request: GenerateRequest): AsyncGenerator<GenerateEvent> {
   const { prompt, projectFiles, conversationHistory, config } = request
   const model = config?.model ?? 'claude-sonnet-4-6-20250514'
   const maxRetries = config?.maxRetries ?? 3
@@ -856,7 +851,11 @@ export async function* generateCode(
   // Step 2: If question, just answer — no code generation
   if (intent === 'question') {
     const { systemPrompt, userPrompt } = assemblePrompt(
-      intent, prompt, projectFiles, conversationHistory, tokenBudget,
+      intent,
+      prompt,
+      projectFiles,
+      conversationHistory,
+      tokenBudget,
     )
     for await (const chunk of callLLM(systemPrompt, userPrompt, model)) {
       if (chunk.type === 'text') yield { type: 'token', text: chunk.text }
@@ -867,7 +866,11 @@ export async function* generateCode(
 
   // Step 3: Assemble context
   const { systemPrompt, userPrompt } = assemblePrompt(
-    intent, prompt, projectFiles, conversationHistory, tokenBudget,
+    intent,
+    prompt,
+    projectFiles,
+    conversationHistory,
+    tokenBudget,
   )
 
   // Step 4: Call LLM with streaming
@@ -888,7 +891,11 @@ export async function* generateCode(
   if (operations.length === 0) {
     yield {
       type: 'error',
-      error: { code: 'PARSE_FAILED', message: 'Could not parse any file operations from LLM output', retryable: true },
+      error: {
+        code: 'PARSE_FAILED',
+        message: 'Could not parse any file operations from LLM output',
+        retryable: true,
+      },
     }
     return
   }

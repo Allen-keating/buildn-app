@@ -50,6 +50,7 @@ packages/server/
 ## Task 1: Environment & Database Setup
 
 **Files:**
+
 - Create: `packages/server/src/lib/env.ts`
 - Create: `packages/server/src/db/schema.ts`
 - Create: `packages/server/src/db/index.ts`
@@ -59,6 +60,7 @@ packages/server/
 - [ ] **Step 1: Add dependencies to package.json**
 
 Add to `dependencies`:
+
 ```json
 "drizzle-orm": "^0.44",
 "postgres": "^3.4",
@@ -67,6 +69,7 @@ Add to `dependencies`:
 ```
 
 Add to `devDependencies`:
+
 ```json
 "drizzle-kit": "^0.31",
 "@types/bcrypt": "^5",
@@ -74,6 +77,7 @@ Add to `devDependencies`:
 ```
 
 Add script:
+
 ```json
 "db:generate": "drizzle-kit generate",
 "db:migrate": "drizzle-kit migrate",
@@ -92,25 +96,25 @@ function required(key: string): string {
 }
 
 export const env = {
-  get DATABASE_URL() { return required('DATABASE_URL') },
-  get JWT_SECRET() { return required('JWT_SECRET') },
-  get REDIS_URL() { return process.env.REDIS_URL ?? 'redis://localhost:6379' },
-  get PORT() { return Number(process.env.PORT) || 3001 },
+  get DATABASE_URL() {
+    return required('DATABASE_URL')
+  },
+  get JWT_SECRET() {
+    return required('JWT_SECRET')
+  },
+  get REDIS_URL() {
+    return process.env.REDIS_URL ?? 'redis://localhost:6379'
+  },
+  get PORT() {
+    return Number(process.env.PORT) || 3001
+  },
 } as const
 ```
 
 - [ ] **Step 3: Create packages/server/src/db/schema.ts**
 
 ```typescript
-import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  timestamp,
-  jsonb,
-  unique,
-} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, timestamp, jsonb, unique } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -231,6 +235,7 @@ git commit -m "feat(server): add database schema with Drizzle ORM and env config
 ## Task 2: Auth Service & JWT Middleware
 
 **Files:**
+
 - Create: `packages/server/src/services/auth.service.ts`
 - Create: `packages/server/src/middleware/auth.ts`
 - Create: `packages/server/src/routes/auth.ts`
@@ -360,10 +365,19 @@ auth.post('/register', async (c) => {
   const user = await createUser(email, name, passwordHash)
   const token = await signToken(user.id)
 
-  return c.json({
-    user: { id: user.id, email: user.email, name: user.name, plan: user.plan, createdAt: user.createdAt },
-    token,
-  }, 201)
+  return c.json(
+    {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        plan: user.plan,
+        createdAt: user.createdAt,
+      },
+      token,
+    },
+    201,
+  )
 })
 
 // POST /api/auth/login
@@ -382,7 +396,13 @@ auth.post('/login', async (c) => {
 
   const token = await signToken(user.id)
   return c.json({
-    user: { id: user.id, email: user.email, name: user.name, plan: user.plan, createdAt: user.createdAt },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      createdAt: user.createdAt,
+    },
     token,
   })
 })
@@ -394,7 +414,13 @@ auth.get('/me', authMiddleware, async (c) => {
   if (!user) return c.json({ error: 'User not found' }, 404)
 
   return c.json({
-    user: { id: user.id, email: user.email, name: user.name, plan: user.plan, createdAt: user.createdAt },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      createdAt: user.createdAt,
+    },
   })
 })
 
@@ -447,6 +473,7 @@ git commit -m "feat(server): add auth service with JWT, register, login, me endp
 ## Task 3: Project CRUD API
 
 **Files:**
+
 - Create: `packages/server/src/services/project.service.ts`
 - Create: `packages/server/src/routes/projects.ts`
 - Modify: `packages/server/src/app.ts`
@@ -611,6 +638,7 @@ export { projectRoutes }
 - [ ] **Step 3: Register route in app.ts**
 
 Add to `packages/server/src/app.ts`:
+
 ```typescript
 import { projectRoutes } from './routes/projects'
 // after auth route
@@ -631,6 +659,7 @@ git commit -m "feat(server): add project CRUD API with ownership checks and plan
 ## Task 4: File CRUD API
 
 **Files:**
+
 - Create: `packages/server/src/services/file.service.ts`
 - Create: `packages/server/src/routes/files.ts`
 - Modify: `packages/server/src/app.ts`
@@ -794,6 +823,7 @@ export { fileRoutes }
 - [ ] **Step 3: Register routes in app.ts**
 
 Add to `packages/server/src/app.ts`:
+
 ```typescript
 import { fileRoutes } from './routes/files'
 // Mount on /api/projects since file routes include /:id/files
@@ -814,6 +844,7 @@ git commit -m "feat(server): add file CRUD API with path validation and tree bui
 ## Task 5: Chat API (SSE Streaming)
 
 **Files:**
+
 - Create: `packages/server/src/services/chat.service.ts`
 - Create: `packages/server/src/routes/chat.ts`
 - Create: `packages/server/src/routes/messages.ts`
@@ -823,6 +854,7 @@ git commit -m "feat(server): add file CRUD API with path validation and tree bui
 - [ ] **Step 1: Add ai-engine dependency**
 
 Add to `packages/server/package.json` dependencies:
+
 ```json
 "@buildn/ai-engine": "workspace:*"
 ```
@@ -853,10 +885,7 @@ export async function getConversationHistory(projectId: string): Promise<Convers
 }
 
 export async function saveUserMessage(projectId: string, content: string) {
-  const [msg] = await db
-    .insert(messages)
-    .values({ projectId, role: 'user', content })
-    .returning()
+  const [msg] = await db.insert(messages).values({ projectId, role: 'user', content }).returning()
   return msg
 }
 
@@ -875,9 +904,7 @@ export async function saveAssistantMessage(
     // Apply file operations
     for (const op of fileOps) {
       if (op.type === 'delete') {
-        await tx
-          .delete(files)
-          .where(eq(files.projectId, projectId))
+        await tx.delete(files).where(eq(files.projectId, projectId))
       } else {
         await tx
           .insert(files)
@@ -1013,6 +1040,7 @@ export { messageRoutes }
 - [ ] **Step 5: Register routes in app.ts**
 
 Add to `packages/server/src/app.ts`:
+
 ```typescript
 import { chatRoutes } from './routes/chat'
 import { messageRoutes } from './routes/messages'
@@ -1035,6 +1063,7 @@ git commit -m "feat(server): add chat SSE streaming and message history API"
 ## Task 6: Snapshot API
 
 **Files:**
+
 - Create: `packages/server/src/services/snapshot.service.ts`
 - Create: `packages/server/src/routes/snapshots.ts`
 - Modify: `packages/server/src/app.ts`
@@ -1139,6 +1168,7 @@ export { snapshotRoutes }
 - [ ] **Step 3: Register routes in app.ts**
 
 Add to `packages/server/src/app.ts`:
+
 ```typescript
 import { snapshotRoutes } from './routes/snapshots'
 app.route('/api/projects', snapshotRoutes)
@@ -1158,6 +1188,7 @@ git commit -m "feat(server): add snapshot list and restore API"
 ## Task 7: Rate Limiting Middleware
 
 **Files:**
+
 - Create: `packages/server/src/lib/redis.ts`
 - Create: `packages/server/src/middleware/rate-limit.ts`
 - Modify: `packages/server/package.json` (add ioredis)
@@ -1166,6 +1197,7 @@ git commit -m "feat(server): add snapshot list and restore API"
 - [ ] **Step 1: Add ioredis dependency**
 
 Add to `packages/server/package.json` dependencies:
+
 ```json
 "ioredis": "^5"
 ```
@@ -1228,6 +1260,7 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
 - [ ] **Step 4: Apply middleware in app.ts**
 
 Add to `packages/server/src/app.ts` after cors:
+
 ```typescript
 import { rateLimitMiddleware } from './middleware/rate-limit'
 app.use('/api/*', rateLimitMiddleware)

@@ -52,6 +52,7 @@ packages/web/src/
 ## Task 1: Dependencies & shadcn/ui Setup
 
 **Files:**
+
 - Modify: `packages/web/package.json`
 
 - [ ] **Step 1: Add all dependencies**
@@ -104,6 +105,7 @@ git commit -m "feat(web): add UI dependencies (zustand, monaco, webcontainer, sh
 ## Task 2: Zustand Store
 
 **Files:**
+
 - Create: `packages/web/src/stores/app-store.ts`
 
 - [ ] **Step 1: Create app-store.ts**
@@ -162,7 +164,12 @@ function buildTreeFromPaths(paths: string[]): FileTreeNode[] {
       const currentPath = parts.slice(0, i + 1).join('/')
       let node = current.find((n) => n.name === name)
       if (!node) {
-        node = { name, path: currentPath, type: isFile ? 'file' : 'directory', ...(isFile ? {} : { children: [] }) }
+        node = {
+          name,
+          path: currentPath,
+          type: isFile ? 'file' : 'directory',
+          ...(isFile ? {} : { children: [] }),
+        }
         current.push(node)
       }
       if (!isFile) current = node.children!
@@ -178,7 +185,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   files: {},
   fileTree: [],
   setProject: (id, name, files) =>
-    set({ projectId: id, projectName: name, files, fileTree: buildTreeFromPaths(Object.keys(files)) }),
+    set({
+      projectId: id,
+      projectName: name,
+      files,
+      fileTree: buildTreeFromPaths(Object.keys(files)),
+    }),
 
   // Chat
   messages: [],
@@ -206,7 +218,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const openFiles = s.openFiles.filter((p) => p !== path)
       return {
         openFiles,
-        activeFilePath: s.activeFilePath === path ? (openFiles[openFiles.length - 1] ?? null) : s.activeFilePath,
+        activeFilePath:
+          s.activeFilePath === path ? (openFiles[openFiles.length - 1] ?? null) : s.activeFilePath,
       }
     }),
   setActiveFile: (path) => set({ activeFilePath: path }),
@@ -250,6 +263,7 @@ git commit -m "feat(web): add Zustand global store with chat, editor, sandbox st
 ## Task 3: API Client & Sandbox Wrapper
 
 **Files:**
+
 - Create: `packages/web/src/lib/api.ts`
 - Create: `packages/web/src/lib/sandbox.ts`
 
@@ -278,10 +292,16 @@ async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
 // Auth
 export const api = {
   register: (data: { email: string; password: string; name: string }) =>
-    fetchJSON<{ user: any; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    fetchJSON<{ user: any; token: string }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 
   login: (data: { email: string; password: string }) =>
-    fetchJSON<{ user: any; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+    fetchJSON<{ user: any; token: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 
   me: () => fetchJSON<{ user: any }>('/auth/me'),
 
@@ -289,8 +309,13 @@ export const api = {
   listProjects: () => fetchJSON<{ projects: any[] }>('/projects'),
   createProject: (data: { name: string; template?: string }) =>
     fetchJSON<{ project: any }>('/projects', { method: 'POST', body: JSON.stringify(data) }),
-  getProject: (id: string) => fetchJSON<{ project: any; files: Record<string, string> }>(`/projects/${id}`),
-  deleteProject: (id: string) => fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+  getProject: (id: string) =>
+    fetchJSON<{ project: any; files: Record<string, string> }>(`/projects/${id}`),
+  deleteProject: (id: string) =>
+    fetch(`${API_BASE}/projects/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    }),
 
   // Chat (SSE)
   streamChat: (projectId: string, prompt: string) => {
@@ -306,7 +331,8 @@ export const api = {
   },
 
   // Messages
-  getMessages: (projectId: string) => fetchJSON<{ messages: any[] }>(`/projects/${projectId}/messages`),
+  getMessages: (projectId: string) =>
+    fetchJSON<{ messages: any[] }>(`/projects/${projectId}/messages`),
 }
 ```
 
@@ -348,10 +374,7 @@ export async function installDeps(wc: WebContainer): Promise<number> {
   return process.exit
 }
 
-export async function startDevServer(
-  wc: WebContainer,
-  onReady: (url: string) => void,
-) {
+export async function startDevServer(wc: WebContainer, onReady: (url: string) => void) {
   const process = await wc.spawn('npm', ['run', 'dev'])
 
   wc.on('server-ready', (_port, url) => {
@@ -397,6 +420,7 @@ git commit -m "feat(web): add API client and WebContainer sandbox wrapper"
 ## Task 4: Layout Components
 
 **Files:**
+
 - Create: `packages/web/src/components/layout/AppShell.tsx`
 - Create: `packages/web/src/components/layout/Header.tsx`
 - Create: `packages/web/src/components/layout/StatusBar.tsx`
@@ -503,6 +527,7 @@ git commit -m "feat(web): add three-column layout with resizable panels"
 ## Task 5: Chat Components
 
 **Files:**
+
 - Create: `packages/web/src/components/chat/ChatPanel.tsx`
 - Create: `packages/web/src/components/chat/MessageList.tsx`
 - Create: `packages/web/src/components/chat/MessageBubble.tsx`
@@ -581,18 +606,14 @@ export function MessageBubble({ message, onFileClick }: MessageBubbleProps) {
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
         className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${
-          isUser
-            ? 'bg-blue-600 text-white'
-            : 'bg-neutral-800 text-neutral-100'
+          isUser ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-100'
         }`}
       >
         {isUser ? (
           <p className="whitespace-pre-wrap">{message.content}</p>
         ) : (
           <div className="prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {message.content}
-            </ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
           </div>
         )}
         {message.fileOperations && message.fileOperations.length > 0 && (
@@ -693,6 +714,7 @@ git commit -m "feat(web): add chat components with streaming and markdown suppor
 ## Task 6: Editor & File Tree Components
 
 **Files:**
+
 - Create: `packages/web/src/components/editor/FileTree.tsx`
 - Create: `packages/web/src/components/editor/FileTabs.tsx`
 - Create: `packages/web/src/components/editor/CodeEditor.tsx`
@@ -711,9 +733,17 @@ interface FileTreeProps {
 }
 
 function TreeNode({
-  node, depth, selectedPath, onSelect, changedPaths,
+  node,
+  depth,
+  selectedPath,
+  onSelect,
+  changedPaths,
 }: {
-  node: FileTreeNode; depth: number; selectedPath: string | null; onSelect: (p: string) => void; changedPaths?: string[]
+  node: FileTreeNode
+  depth: number
+  selectedPath: string | null
+  onSelect: (p: string) => void
+  changedPaths?: string[]
 }) {
   const [expanded, setExpanded] = useState(depth < 2)
   const isChanged = changedPaths?.includes(node.path)
@@ -730,9 +760,17 @@ function TreeNode({
           <span>{expanded ? '▼' : '▶'}</span>
           <span>{node.name}</span>
         </button>
-        {expanded && node.children?.map((child) => (
-          <TreeNode key={child.path} node={child} depth={depth + 1} selectedPath={selectedPath} onSelect={onSelect} changedPaths={changedPaths} />
-        ))}
+        {expanded &&
+          node.children?.map((child) => (
+            <TreeNode
+              key={child.path}
+              node={child}
+              depth={depth + 1}
+              selectedPath={selectedPath}
+              onSelect={onSelect}
+              changedPaths={changedPaths}
+            />
+          ))}
       </div>
     )
   }
@@ -754,7 +792,14 @@ export function FileTree({ tree, selectedPath, onSelect, changedPaths }: FileTre
     <div className="py-2">
       <p className="px-3 pb-2 text-xs font-semibold uppercase text-neutral-500">Files</p>
       {tree.map((node) => (
-        <TreeNode key={node.path} node={node} depth={0} selectedPath={selectedPath} onSelect={onSelect} changedPaths={changedPaths} />
+        <TreeNode
+          key={node.path}
+          node={node}
+          depth={0}
+          selectedPath={selectedPath}
+          onSelect={onSelect}
+          changedPaths={changedPaths}
+        />
       ))}
     </div>
   )
@@ -787,7 +832,10 @@ export function FileTabs({ openFiles, activePath, onSelect, onClose }: FileTabsP
           >
             <span>{name}</span>
             <button
-              onClick={(e) => { e.stopPropagation(); onClose(path) }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onClose(path)
+              }}
               className="ml-1 text-neutral-600 hover:text-white"
             >
               ×
@@ -863,6 +911,7 @@ git commit -m "feat(web): add file tree, tabs, and Monaco code editor"
 ## Task 7: Preview Components
 
 **Files:**
+
 - Create: `packages/web/src/components/preview/PreviewPanel.tsx`
 - Create: `packages/web/src/components/preview/DeviceFrame.tsx`
 - Create: `packages/web/src/components/preview/ErrorOverlay.tsx`
@@ -953,9 +1002,7 @@ export function PreviewPanel({ url, isLoading, error }: PreviewPanelProps) {
     <div className="relative flex h-full flex-col">
       <DeviceFrame device={device} onDeviceChange={setDevice} />
       <div className="flex flex-1 items-center justify-center overflow-hidden p-2">
-        {isLoading && (
-          <p className="text-sm text-neutral-500">Loading preview...</p>
-        )}
+        {isLoading && <p className="text-sm text-neutral-500">Loading preview...</p>}
         {!isLoading && !url && (
           <p className="text-sm text-neutral-500">Send a message to see the preview</p>
         )}
@@ -988,6 +1035,7 @@ git commit -m "feat(web): add preview panel with device frame toggle"
 ## Task 8: Pages & Routing
 
 **Files:**
+
 - Create: `packages/web/src/pages/Login.tsx`
 - Create: `packages/web/src/pages/ProjectList.tsx`
 - Create: `packages/web/src/pages/Workspace.tsx`
