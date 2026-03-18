@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import type { Project, FileMap } from '@buildn/shared'
 import { bootSandbox, installDeps, startDevServer, teardownSandbox } from '@buildn/sandbox'
 import { useSandboxStore } from '@/lib/stores/sandbox-store'
 import { PreviewPanel } from '@/components/preview/preview-panel'
+import { ChatPanel } from '@/components/chat/chat-panel'
 
 interface WorkspaceShellProps {
   project: Project
@@ -15,6 +16,8 @@ interface WorkspaceShellProps {
 
 export function WorkspaceShell({ project, initialFiles }: WorkspaceShellProps) {
   const { setStatus, setPreviewUrl, setError, reset } = useSandboxStore()
+  const [files, setFiles] = useState<FileMap>(initialFiles)
+  const [activeTab, setActiveTab] = useState<'chat' | 'code'>('chat')
 
   useEffect(() => {
     if (Object.keys(initialFiles).length === 0) return
@@ -68,10 +71,24 @@ export function WorkspaceShell({ project, initialFiles }: WorkspaceShellProps) {
         <Panel defaultSize={42} minSize={25}>
           <div className="flex h-full flex-col">
             <div className="flex border-b border-neutral-800">
-              <div className="border-b-2 border-blue-500 px-4 py-2 text-xs text-white">Chat</div>
-              <div className="px-4 py-2 text-xs text-neutral-600">Code</div>
+              <button
+                onClick={() => setActiveTab('chat')}
+                className={`px-4 py-2 text-xs ${activeTab === 'chat' ? 'border-b-2 border-blue-500 text-white' : 'text-neutral-600 hover:text-neutral-400'}`}
+              >
+                Chat
+              </button>
+              <button
+                onClick={() => setActiveTab('code')}
+                className={`px-4 py-2 text-xs ${activeTab === 'code' ? 'border-b-2 border-blue-500 text-white' : 'text-neutral-600 hover:text-neutral-400'}`}
+              >
+                Code
+              </button>
             </div>
-            <div className="flex flex-1 items-center justify-center text-xs text-neutral-600">Coming in P3</div>
+            {activeTab === 'chat' ? (
+              <ChatPanel projectId={project.id} currentFiles={files} onFilesChanged={setFiles} />
+            ) : (
+              <div className="flex flex-1 items-center justify-center text-xs text-neutral-600">Coming in P4</div>
+            )}
           </div>
         </Panel>
         <Separator className="w-px bg-neutral-800 hover:bg-blue-600" />
@@ -82,7 +99,7 @@ export function WorkspaceShell({ project, initialFiles }: WorkspaceShellProps) {
 
       <div className="flex h-6 items-center gap-4 border-t border-neutral-800 px-4 text-[10px] text-neutral-600">
         <SandboxStatusIndicator />
-        <span>{Object.keys(initialFiles).length} files</span>
+        <span>{Object.keys(files).length} files</span>
       </div>
     </div>
   )
