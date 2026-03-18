@@ -14,9 +14,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.39"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@buildn/shared": "workspace:*",
     "@types/node": "^22",

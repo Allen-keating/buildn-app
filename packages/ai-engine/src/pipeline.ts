@@ -7,7 +7,7 @@ import { autoFixPipeline } from './postprocess/auto-fix'
 
 export async function* generateCode(request: GenerateRequest): AsyncGenerator<GenerateEvent> {
   const { prompt, projectFiles, conversationHistory, config } = request
-  const model = config?.model ?? 'claude-sonnet-4-6-20250514'
+  const model = config?.model ?? 'qwen-coder-plus'
   const maxRetries = config?.maxRetries ?? 3
   const tokenBudget = config?.tokenBudget ?? 120_000
   const skipPostProcess = config?.skipPostProcess ?? false
@@ -32,20 +32,26 @@ export async function* generateCode(request: GenerateRequest): AsyncGenerator<Ge
     return
   }
 
-  const { systemPrompt, userPrompt } = assemblePrompt(
-    intent,
-    prompt,
-    projectFiles,
-    conversationHistory,
-    tokenBudget,
-  )
+  let assembled
+  try {
+    assembled = assemblePrompt(intent, prompt, projectFiles, conversationHistory, tokenBudget)
+  } catch (err) {
+    yield { type: 'error', error: { code: 'PARSE_FAILED' as const, message: `Assemble failed: ${err}`, retryable: false } }
+    return
+  }
+  const { systemPrompt, userPrompt } = assembled
 
   let fullText = ''
-  for await (const chunk of callLLM(systemPrompt, userPrompt, model)) {
-    if (chunk.type === 'text') {
-      yield { type: 'token', text: chunk.text }
-      fullText += chunk.text
+  try {
+    for await (const chunk of callLLM(systemPrompt, userPrompt, model)) {
+      if (chunk.type === 'text') {
+        yield { type: 'token', text: chunk.text }
+        fullText += chunk.text
+      }
     }
+  } catch (err) {
+    yield { type: 'error', error: { code: 'LLM_TIMEOUT' as const, message: `LLM call failed: ${err}`, retryable: true } }
+    return
   }
 
   const operations = parseFileOperations(fullText, projectFiles)

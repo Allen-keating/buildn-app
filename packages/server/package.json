@@ -16,14 +16,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "hono": "^4",
-    "@hono/node-server": "^1",
     "@buildn/ai-engine": "workspace:*",
-    "drizzle-orm": "^0.44",
-    "postgres": "^3.4",
-    "jose": "^6",
+    "@hono/node-server": "^1",
     "bcrypt": "^6",
-    "ioredis": "^5"
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.44",
+    "hono": "^4",
+    "ioredis": "^5",
+    "jose": "^6",
+    "postgres": "^3.4"
   },
   "devDependencies": {
     "@buildn/shared": "workspace:*",
