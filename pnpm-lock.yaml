@@ -20,6 +20,9 @@ importers:
       '@buildn/ai-engine':
         specifier: workspace:*
         version: link:../../packages/ai-engine
+      '@buildn/sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox
       '@supabase/ssr':
         specifier: ^0.5
         version: 0.5.2(@supabase/supabase-js@2.99.2)
@@ -105,6 +108,19 @@ importers:
       vitest:
         specifier: ^3
         version: 3.2.4(@types/node@22.19.15)(jiti@2.6.1)(lightningcss@1.32.0)
+
+  packages/sandbox:
+    dependencies:
+      '@webcontainer/api':
+        specifier: ^1.6
+        version: 1.6.1
+    devDependencies:
+      '@buildn/shared':
+        specifier: workspace:*
+        version: link:../shared
+      typescript:
+        specifier: ^5.7
+        version: 5.9.3
 
   packages/shared:
     devDependencies:
@@ -811,6 +827,9 @@ packages:
 
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
+
+  '@webcontainer/api@1.6.1':
+    resolution: {integrity: sha512-2RS2KiIw32BY1Icf6M1DvqSmcon9XICZCDgS29QJb2NmF12ZY2V5Ia+949hMKB3Wno+P/Y8W+sPP59PZeXSELg==}
 
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
@@ -1802,6 +1821,8 @@ snapshots:
       '@vitest/pretty-format': 3.2.4
       loupe: 3.2.1
       tinyrainbow: 2.0.0
+
+  '@webcontainer/api@1.6.1': {}
 
   assertion-error@2.0.1: {}
 
