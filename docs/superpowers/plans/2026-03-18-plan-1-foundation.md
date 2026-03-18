@@ -63,6 +63,7 @@ buildn-app/
 ## Task 1: Root Monorepo Setup
 
 **Files:**
+
 - Create: `package.json`
 - Create: `pnpm-workspace.yaml`
 - Create: `turbo.json`
@@ -167,6 +168,7 @@ git commit -m "chore: initialize monorepo with pnpm workspace and turborepo"
 ## Task 2: Shared Types Package
 
 **Files:**
+
 - Create: `packages/shared/package.json`
 - Create: `packages/shared/tsconfig.json`
 - Create: `packages/shared/src/index.ts`
@@ -355,13 +357,7 @@ export interface EngineError {
 - [ ] **Step 7: Create packages/shared/src/types/sandbox.ts**
 
 ```typescript
-export type SandboxStatus =
-  | 'idle'
-  | 'booting'
-  | 'installing'
-  | 'running'
-  | 'building'
-  | 'error'
+export type SandboxStatus = 'idle' | 'booting' | 'installing' | 'running' | 'building' | 'error'
 
 export interface InstallResult {
   success: boolean
@@ -389,13 +385,7 @@ export interface SandboxError {
 ```typescript
 export type { FileMap, FileOperation, FileTreeNode } from './types/file'
 export type { ConversationMessage, ChatMessage } from './types/chat'
-export type {
-  User,
-  Project,
-  ProjectSummary,
-  Snapshot,
-  SnapshotSummary,
-} from './types/project'
+export type { User, Project, ProjectSummary, Snapshot, SnapshotSummary } from './types/project'
 export type {
   Intent,
   GenerateRequest,
@@ -404,12 +394,7 @@ export type {
   ValidationResult,
   EngineError,
 } from './types/ai-engine'
-export type {
-  SandboxStatus,
-  InstallResult,
-  BuildResult,
-  SandboxError,
-} from './types/sandbox'
+export type { SandboxStatus, InstallResult, BuildResult, SandboxError } from './types/sandbox'
 ```
 
 - [ ] **Step 9: Verify types compile**
@@ -429,6 +414,7 @@ git commit -m "feat: add shared types package with all module interfaces"
 ## Task 3: Web Package Scaffolding
 
 **Files:**
+
 - Create: `packages/web/package.json`
 - Create: `packages/web/tsconfig.json`
 - Create: `packages/web/vite.config.ts`
@@ -481,9 +467,7 @@ git commit -m "feat: add shared types package with all module interfaces"
     "noEmit": true
   },
   "include": ["src"],
-  "references": [
-    { "path": "../shared" }
-  ]
+  "references": [{ "path": "../shared" }]
 }
 ```
 
@@ -580,6 +564,7 @@ git commit -m "feat: scaffold web package with React 19, Vite 6, Tailwind CSS 4"
 ## Task 4: Server Package Scaffolding
 
 **Files:**
+
 - Create: `packages/server/package.json`
 - Create: `packages/server/tsconfig.json`
 - Create: `packages/server/src/index.ts`
@@ -621,9 +606,7 @@ git commit -m "feat: scaffold web package with React 19, Vite 6, Tailwind CSS 4"
     "rootDir": "src"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../shared" }
-  ]
+  "references": [{ "path": "../shared" }]
 }
 ```
 
@@ -670,6 +653,7 @@ git commit -m "feat: scaffold server package with Hono"
 ## Task 5: AI Engine Package Scaffolding
 
 **Files:**
+
 - Create: `packages/ai-engine/package.json`
 - Create: `packages/ai-engine/tsconfig.json`
 - Create: `packages/ai-engine/src/index.ts`
@@ -713,9 +697,7 @@ git commit -m "feat: scaffold server package with Hono"
     "rootDir": "src"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../shared" }
-  ]
+  "references": [{ "path": "../shared" }]
 }
 ```
 
@@ -724,9 +706,7 @@ git commit -m "feat: scaffold server package with Hono"
 ```typescript
 import type { GenerateRequest, GenerateEvent } from '@buildn/shared'
 
-export async function* generateCode(
-  request: GenerateRequest,
-): AsyncGenerator<GenerateEvent> {
+export async function* generateCode(request: GenerateRequest): AsyncGenerator<GenerateEvent> {
   // Placeholder — will be implemented in Plan 3 (AI Engine)
   yield {
     type: 'error',
@@ -761,6 +741,7 @@ git commit -m "feat: scaffold ai-engine package with placeholder generateCode"
 ## Task 6: ESLint + Prettier Configuration
 
 **Files:**
+
 - Create: `eslint.config.mjs`
 - Create: `.prettierrc`
 - Create: `.prettierignore`
@@ -808,10 +789,7 @@ export default [
       },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
@@ -841,6 +819,7 @@ git commit -m "chore: add ESLint and Prettier configuration"
 ## Task 7: GitHub Actions CI
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Create .github/workflows/ci.yml**
@@ -895,6 +874,7 @@ git commit -m "ci: add GitHub Actions workflow for typecheck, lint, build"
 ## Task 8: Environment Variables Template
 
 **Files:**
+
 - Create: `.env.example`
 
 - [ ] **Step 1: Create .env.example**
