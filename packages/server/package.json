@@ -8,16 +8,30 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "hono": "^4",
-    "@hono/node-server": "^1"
+    "@hono/node-server": "^1",
+    "@buildn/ai-engine": "workspace:*",
+    "drizzle-orm": "^0.44",
+    "postgres": "^3.4",
+    "jose": "^6",
+    "bcrypt": "^6",
+    "ioredis": "^5"
   },
   "devDependencies": {
     "@buildn/shared": "workspace:*",
+    "@types/bcrypt": "^5",
     "@types/node": "^22",
+    "drizzle-kit": "^0.31",
     "tsx": "^4",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^3"
   }
 }

@@ -1,16 +1,7 @@
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { app } from './app'
+import { env } from './lib/env'
 
-const app = new Hono()
-
-app.get('/api/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() })
+serve({ fetch: app.fetch, port: env.PORT }, () => {
+  console.log(`Buildn API server running on http://localhost:${env.PORT}`)
 })
-
-const port = Number(process.env.PORT) || 3001
-
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`Buildn API server running on http://localhost:${port}`)
-})
-
-export { app }

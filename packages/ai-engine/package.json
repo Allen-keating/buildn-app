@@ -19,6 +19,8 @@
   },
   "devDependencies": {
     "@buildn/shared": "workspace:*",
-    "typescript": "^5.7"
+    "@types/node": "^22",
+    "typescript": "^5.7",
+    "vitest": "^3"
   }
 }
