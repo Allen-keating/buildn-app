@@ -1,0 +1,23 @@
+{
+  "name": "@buildn/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "hono": "^4",
+    "@hono/node-server": "^1"
+  },
+  "devDependencies": {
+    "@buildn/shared": "workspace:*",
+    "@types/node": "^22",
+    "tsx": "^4",
+    "typescript": "^5.7"
+  }
+}
