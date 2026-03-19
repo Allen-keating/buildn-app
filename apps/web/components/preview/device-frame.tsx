@@ -15,7 +15,7 @@ interface DeviceFrameProps {
 
 export function DeviceFrame({ device, onDeviceChange }: DeviceFrameProps) {
   return (
-    <div className="flex gap-1 border-b border-neutral-800 px-3 py-1.5">
+    <div className="flex gap-1">
       {(Object.keys(SIZES) as DeviceType[]).map((d) => (
         <button
           key={d}
