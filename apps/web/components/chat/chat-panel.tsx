@@ -12,9 +12,10 @@ interface ChatPanelProps {
   projectId: string
   currentFiles: FileMap
   onFilesChanged?: (files: FileMap) => void
+  onFileClick?: (path: string) => void
 }
 
-export function ChatPanel({ projectId, currentFiles, onFilesChanged }: ChatPanelProps) {
+export function ChatPanel({ projectId, currentFiles, onFilesChanged, onFileClick }: ChatPanelProps) {
   const { messages, isGenerating, addUserMessage, addAssistantPlaceholder, appendToAssistant, setAssistantFileOps, finalizeAssistant, setIsGenerating } = useChatStore()
 
   const handleSend = useCallback(async (prompt: string) => {
@@ -65,7 +66,7 @@ export function ChatPanel({ projectId, currentFiles, onFilesChanged }: ChatPanel
 
   return (
     <div className="flex h-full flex-col">
-      <MessageList messages={messages} />
+      <MessageList messages={messages} onFileClick={onFileClick} />
       <ChatInput onSubmit={handleSend} disabled={isGenerating} />
     </div>
   )
