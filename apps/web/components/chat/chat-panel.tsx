@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { useChatStore } from '@/lib/stores/chat-store'
 import { streamChat } from '@/lib/chat/sse-client'
 import { getSandbox, writeFilesToContainer, hasPackageJsonChanged, installDeps } from '@buildn/sandbox'
+import { useVisualStore } from '@/lib/stores/visual-store'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
 import type { FileMap } from '@buildn/shared'
@@ -17,9 +18,16 @@ interface ChatPanelProps {
 
 export function ChatPanel({ projectId, currentFiles, onFilesChanged, onFileClick }: ChatPanelProps) {
   const { messages, isGenerating, addUserMessage, addAssistantPlaceholder, appendToAssistant, setAssistantFileOps, finalizeAssistant, setIsGenerating } = useChatStore()
+  const { selectedElement, clearSelection } = useVisualStore()
 
   const handleSend = useCallback(async (prompt: string) => {
     if (isGenerating) return
+
+    let finalPrompt = prompt
+    if (selectedElement) {
+      finalPrompt = `[User selected element: <${selectedElement.tag}> with text "${selectedElement.text}" and classes "${selectedElement.classes}", CSS selector: "${selectedElement.selector}"]\n\nModify this specific element: ${prompt}`
+      clearSelection()
+    }
 
     addUserMessage(prompt)
     addAssistantPlaceholder()
@@ -28,7 +36,7 @@ export function ChatPanel({ projectId, currentFiles, onFilesChanged, onFileClick
     const filesBefore = { ...currentFiles }
 
     try {
-      await streamChat(projectId, prompt, {
+      await streamChat(projectId, finalPrompt, {
         onToken: (text) => appendToAssistant(text),
         onFileOperation: (op) => setAssistantFileOps([op]),
         onDone: async (operations) => {
@@ -62,12 +70,17 @@ export function ChatPanel({ projectId, currentFiles, onFilesChanged, onFileClick
     } finally {
       setIsGenerating(false)
     }
-  }, [projectId, currentFiles, isGenerating, addUserMessage, addAssistantPlaceholder, appendToAssistant, setAssistantFileOps, finalizeAssistant, setIsGenerating, onFilesChanged])
+  }, [projectId, currentFiles, isGenerating, selectedElement, clearSelection, addUserMessage, addAssistantPlaceholder, appendToAssistant, setAssistantFileOps, finalizeAssistant, setIsGenerating, onFilesChanged])
 
   return (
     <div className="flex h-full flex-col">
       <MessageList messages={messages} onFileClick={onFileClick} />
-      <ChatInput onSubmit={handleSend} disabled={isGenerating} />
+      <ChatInput
+        onSubmit={handleSend}
+        disabled={isGenerating}
+        selectedElement={selectedElement ? { tag: selectedElement.tag, text: selectedElement.text } : null}
+        onClearSelection={clearSelection}
+      />
     </div>
   )
 }

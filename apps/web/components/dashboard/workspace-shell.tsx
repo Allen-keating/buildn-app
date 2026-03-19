@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import type { Project, FileMap } from '@buildn/shared'
-import { bootSandbox, installDeps, startDevServer, teardownSandbox, writeFilesToContainer, getSandbox } from '@buildn/sandbox'
+import { bootSandbox, installDeps, startDevServer, teardownSandbox, writeFilesToContainer, getSandbox, injectSelectorScript } from '@buildn/sandbox'
 import { useSandboxStore } from '@/lib/stores/sandbox-store'
 import { useEditorStore } from '@/lib/stores/editor-store'
 import { PreviewPanel } from '@/components/preview/preview-panel'
@@ -32,6 +32,7 @@ export function WorkspaceShell({ project, initialFiles }: WorkspaceShellProps) {
       try {
         setStatus('booting')
         const wc = await bootSandbox(initialFiles)
+        await injectSelectorScript(wc)
         if (cancelled) return
         setStatus('installing')
         const exitCode = await installDeps(wc)
